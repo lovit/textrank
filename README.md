@@ -1,6 +1,6 @@
 ## TextRank implementation
 
-For keyword selections, 
+### For keyword selections, 
 
 	from pprint import pprint
 	from textrank import summarize_as_keywords
@@ -43,7 +43,7 @@ Keywords, returned variable is list of tuple form. Each tuple contains sentence 
 	 ...
 	 ]
 
-For extracting key-sentences, 
+### For extracting key-sentences, 
 
 	keysentences = summarize_as_keysentences(
 	    sents,
