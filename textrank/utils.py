@@ -42,11 +42,13 @@ def sents_to_wordgraph(sents, tokenizer=lambda s:s.split(),
 
     return cooccurrence, idx2vocab
     
-def sents_to_sentgraph(sents, tokenizer=lambda s:s.split(),
+def sents_to_sentgraph(sents, tokenizer=lambda s:s.split(), vocab2idx=None,
     min_count=10, min_similarity=0.4, min_length=4, verbose=True):
 
-    vocab_counter, idx2vocab = _scan_vocabulary(sents, tokenizer, min_count)
-    vocab2idx = {vocab:idx for idx, vocab in enumerate(idx2vocab)}
+    if not vocab2idx:
+        _, idx2vocab = _scan_vocabulary(sents, tokenizer, min_count)
+        vocab2idx = {vocab:idx for idx, vocab in enumerate(idx2vocab)}
+
     sents_ = [{vocab2idx[vocab] for vocab in tokenizer(sent) if vocab in vocab2idx}
               for sent in sents]
 
@@ -83,7 +85,7 @@ def sents_to_sentgraph(sents, tokenizer=lambda s:s.split(),
     if verbose:
         print('\rconstructing sent graph from {} sents was done.'.format(n_sents), flush=True)
 
-    return csr_matrix((data, (rows, cols)), shape=(n_sents, n_sents)), idx2vocab
+    return csr_matrix((data, (rows, cols)), shape=(n_sents, n_sents))
 
 def _scan_vocabulary(sents, tokenizer, min_count):
     vocab_counter = Counter(vocab for sent in sents for vocab in tokenizer(sent))
