@@ -5,54 +5,84 @@ from scipy.sparse import csr_matrix
 import numpy as np
 
 def sents_to_wordgraph(sents, tokenizer=lambda s:s.split(),
-    min_count=10, min_cooccurrence=3):
+    min_count=10, min_cooccurrence=3, verbose=True):
 
     vocab_counter, idx2vocab = _scan_vocabulary(sents, tokenizer, min_count)
     cooccurrence = defaultdict(lambda: defaultdict(int))
-    for sent in sents:
+    n_sents = len(sents)
+
+    for i_sent, sent in enumerate(sents):
+
         words = tokenizer(sent)
         n = len(words)
         if n < 2:
             continue
+
         for left, right in zip(words, words[1:]):
             if not (left in vocab_counter) or not (right in vocab_counter):
                 continue
             cooccurrence[left][right] += 1
             cooccurrence[right][left] += 1
+
+        if verbose and i_sent % 100 == 0:
+            print('\rconstruct word graph {} / {} sents'.format(
+                i_sent, n_sents), end='', flush=True)
+
+    if verbose:
+        print('\rconstructing word graph from {} sents was done'.format(i_sent+1), flush=True)
+
     cooccurrence = {left:{right:count for right, count in rdict.items()
                           if count >= min_cooccurrence}
                     for left, rdict in cooccurrence.items()}
+
+
     cooccurrence = {left:rdict for left, rdict in cooccurrence.items() if rdict}
     vocab2idx = {vocab:idx for idx, vocab in enumerate(idx2vocab)}
     cooccurrence = _encode_cooccurrence(cooccurrence, vocab2idx)
+
     return cooccurrence, idx2vocab
     
 def sents_to_sentgraph(sents, tokenizer=lambda s:s.split(),
-    min_count=10, min_similarity=0.2):
+    min_count=10, min_similarity=0.4, min_length=4, verbose=True):
 
     vocab_counter, idx2vocab = _scan_vocabulary(sents, tokenizer, min_count)
-    sents_ = [{vocab2idx[vocab] for vocab in tokenizer(sent) if vocab in vocab_counter} 
+    vocab2idx = {vocab:idx for idx, vocab in enumerate(idx2vocab)}
+    sents_ = [{vocab2idx[vocab] for vocab in tokenizer(sent) if vocab in vocab2idx}
               for sent in sents]
+
     rows = []
     cols = []
     data = []
+    n_sents = len(sents_)
+
     for i, sent_i in enumerate(sents_):
+
+        if verbose and i % 10 == 0:
+            print('\rconstruct sent graph {} / {} sents'.format(
+                i, n_sents), end='', flush=True)
+
         len_i = len(sent_i)
-        if len_i < 2:
+        if len_i < min_length:
             continue
+
         for j, sent_j in enumerate(sents_):
+
             if i == j:
                 continue
             len_j = len(sent_j)
-            if len_j < 2:
+            if len_j < min_length:
                 continue
+
             sim = len(sent_i.intersection(sent_j)) / (np.log(len_i) + np.log(len_j))
             if sim < min_similarity:
                 continue
             rows.append(i)
             cols.append(j)
             data.append(sim)
-    n_sents = len(sents_)
+
+    if verbose:
+        print('\rconstructing sent graph from {} sents was done.'.format(n_sents), flush=True)
+
     return csr_matrix((data, (rows, cols)), shape=(n_sents, n_sents)), idx2vocab
 
 def _scan_vocabulary(sents, tokenizer, min_count):
