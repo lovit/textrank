@@ -2,23 +2,27 @@
 
 For keyword selections, 
 
-    from pprint import pprint
-    from textrank import summarize_as_keywords
+```python
+from pprint import pprint
+from textrank import summarize_as_keywords
 
-    sents = ['sent is list of str', 'this is example']
-    keywords = summarize_as_keywords(sents)
+sents = ['sent is list of str', 'this is example']
+keywords = summarize_as_keywords(sents)
+```
 
 You can specify word graph with arguments of summarize_as_keywords functions. If you use debug mode, it return not only keywords but ranks, vocabulary index, and word graph.
 
-    keywords = summarize_as_keywords(
-        sents,
-        topk=50,
-        tokenizer=lambda s:s.split(),
-        min_count=10,
-        min_cooccurrence=3,
-        verbose=True,
-        debug=True
-    )
+```python
+keywords = summarize_as_keywords(
+    sents,
+    topk=50,
+    tokenizer=lambda s:s.split(),
+    min_count=10,
+    min_cooccurrence=3,
+    verbose=True,
+    debug=True
+)
+```
 
 Keywords, returned variable is list of tuple form. Each tuple contains sentence and its score
 
@@ -45,11 +49,13 @@ Keywords, returned variable is list of tuple form. Each tuple contains sentence 
 
 For extracting key-sentences, 
 
-    keysentences = summarize_as_keysentences(
-        sents,
-        vocab2idx=vocab2idx,
-        topk=3,
-        verbose=False
-    )
+```python
+keysentences = summarize_as_keysentences(
+    sents,
+    vocab2idx=vocab2idx,
+    topk=3,
+    verbose=False
+)
+```
 
 Keysentences, returned variable is also list of tuple form. Each tuple contains sentence and its score
