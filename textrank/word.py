@@ -5,7 +5,8 @@ from .utils import scan_vocabulary
 from .utils import tokenize_sents
 
 
-def word_graph(sents, tokenize=None, min_count=2, window=2, min_cooccurrence=2, vocab_to_idx=None):
+def word_graph(sents, tokenize=None, min_count=2, window=2,
+    min_cooccurrence=2, vocab_to_idx=None, verbose=False):
     """
     Arguments
     ---------
@@ -22,6 +23,8 @@ def word_graph(sents, tokenize=None, min_count=2, window=2, min_cooccurrence=2, 
     vocab_to_idx : dict
         Vocabulary to index mapper.
         If None, this function scan vocabulary first.
+    verbose : Boolean
+        If True, verbose mode on
 
     Returns
     -------
@@ -35,10 +38,10 @@ def word_graph(sents, tokenize=None, min_count=2, window=2, min_cooccurrence=2, 
         idx_to_vocab = [vocab for vocab, _ in sorted(vocab_to_idx.items(), key=lambda x:x[1])]
 
     tokens = tokenize_sents(sents, tokenize)
-    g = cooccurrence(tokens, vocab_to_idx, window, min_cooccurrence)
+    g = cooccurrence(tokens, vocab_to_idx, window, min_cooccurrence, verbose)
     return g, idx_to_vocab
 
-def cooccurrence(tokens, vocab_to_idx, window=2, min_cooccurrence=2):
+def cooccurrence(tokens, vocab_to_idx, window=2, min_cooccurrence=2, verbose=False):
     """
     Arguments
     ---------
@@ -50,6 +53,8 @@ def cooccurrence(tokens, vocab_to_idx, window=2, min_cooccurrence=2):
         Co-occurrence window size
     min_cooccurrence : int
         Minimum cooccurrence frequency
+    verbose : Boolean
+        If True, verbose mode on
 
     Returns
     -------
@@ -57,7 +62,9 @@ def cooccurrence(tokens, vocab_to_idx, window=2, min_cooccurrence=2):
         shape = (n_vocabs, n_vocabs)
     """
     counter = defaultdict(int)
-    for tokens_i in tokens:
+    for s, tokens_i in enumerate(tokens):
+        if verbose and s % 1000 == 0:
+            print('\rword cooccurrence counting {}'.format(s), end='')
         vocabs = [vocab_to_idx[w] for w in tokens_i if w in vocab_to_idx]
         n = len(vocabs)
         for i, v in enumerate(vocabs):
@@ -73,6 +80,7 @@ def cooccurrence(tokens, vocab_to_idx, window=2, min_cooccurrence=2):
                 counter[(vocabs[j], v)] += 1
     counter = {k:v for k,v in counter.items() if v >= min_cooccurrence}
     n_vocabs = len(vocab_to_idx)
+    print('\rword cooccurrence counting from {} sents was done'.format(s+1))
     return dict_to_mat(counter, n_vocabs, n_vocabs)
 
 def dict_to_mat(d, n_rows, n_cols):

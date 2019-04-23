@@ -23,7 +23,7 @@ class KeywordSummarizer:
     def train_textrank(self, sents):
         g, self.idx_to_vocab = word_graph(sents,
             self.tokenize, self.min_count,self.window,
-            self.min_cooccurrence, self.vocab_to_idx)
+            self.min_cooccurrence, self.vocab_to_idx, self.verbose)
         self.R = pagerank(g, self.df, self.max_iter, self.bias).reshape(-1)
         if self.verbose:
             print('trained TextRank. n words = {}'.format(self.R.shape[0]))
