@@ -1,42 +1,39 @@
-from .utils import sents_to_wordgraph
-from .utils import sents_to_sentgraph
-from .rank import BiasedReinforceRank
+from .rank import pagerank
+from .word import word_graph
 
-def summarize_as_keywords(sents, topk=50, tokenizer=lambda s:s.split(),
-    min_count=10, min_cooccurrence=3, verbose=True, debug=False):
 
-    assert topk > 0
+class KeywordSummarizer:
+    def __init__(self, sents=None, tokenize=None, min_count=2,
+        window=-1, min_cooccurrence=2, vocab_to_idx=None,
+        df=0.85, max_iter=30, bias=None, verbose=False):
 
-    g, idx2vocab = sents_to_wordgraph(sents,
-        tokenizer, min_count, min_cooccurrence, verbose)
+        self.tokenize = tokenize
+        self.min_count = min_count
+        self.window = window
+        self.min_cooccurrence = min_cooccurrence
+        self.vocab_to_idx = vocab_to_idx
+        self.df = df
+        self.max_iter = max_iter
+        self.bias = bias
+        self.verbose = verbose
 
-    trainer = BiasedReinforceRank(verbose=verbose)
-    ranks = trainer.rank(g)
+        if sents is not None:
+            self.train_textrank(sents)
 
-    keyword_idxs = ranks.argsort()[::-1][:topk]
-    keyword_rank = ranks[keyword_idxs]
-    keywords = [(idx2vocab[idx], rank) for idx, rank
-                in zip(keyword_idxs, keyword_rank)]
+    def train_textrank(self, sents):
+        g, self.idx_to_vocab = word_graph(sents,
+            self.tokenize, self.min_count,self.window,
+            self.min_cooccurrence, self.vocab_to_idx)
+        self.R = pagerank(g, self.df, self.max_iter, self.bias).reshape(-1)
+        if self.verbose:
+            print('trained TextRank. n words = {}'.format(self.R.shape[0]))
 
-    if not debug:
+    def keywords(self, topk=30):
+        if not hasattr(self, 'R'):
+            raise RuntimeError('Train textrank first or use summarize function')
+        keywords = [(w, r) for w, r in zip(self.idx_to_vocab, self.R)]
         return keywords
-    return keywords, ranks, idx2vocab, g
 
-def summarize_as_keysentences(sents, topk=5, tokenizer=lambda s:s.split(),
-    vocab2idx=None, min_count=10, min_similarity=0.4, min_length=4, verbose=True):
-
-    assert topk > 0
-
-    g = sents_to_sentgraph(sents, tokenizer, vocab2idx,
-            min_count, min_similarity, min_length, verbose)
-
-    trainer = BiasedReinforceRank(verbose=verbose)
-    ranks = trainer.rank(g)
-    
-    keysent_idxs = ranks.argsort()[::-1][:topk]
-    keysent_rank = ranks[keysent_idxs]
-
-    keysents = [(sents[idx], rank) for idx, rank
-                in zip(keysent_idxs, keysent_rank)]
-
-    return keysents
+    def summarize(self, sents, topk=30):
+        self.train_textrank(sents)
+        return self.keywords(topk)
