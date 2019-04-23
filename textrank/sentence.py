@@ -57,7 +57,8 @@ def sent_graph(sents, tokenize=None, min_count=2, min_sim=0.3,
             rows.append(i)
             cols.append(j)
             data.append(sim)
-    print('\rrconstructing sentence graph was constructed from {} sents'.format(n_sents))
+    if verbose:
+        print('\rconstructing sentence graph was constructed from {} sents'.format(n_sents))
     return csr_matrix((data, (rows, cols)), shape=(n_sents, n_sents))
 
 def textrank_sent_sim(s1, s2):
