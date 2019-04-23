@@ -80,7 +80,8 @@ def cooccurrence(tokens, vocab_to_idx, window=2, min_cooccurrence=2, verbose=Fal
                 counter[(vocabs[j], v)] += 1
     counter = {k:v for k,v in counter.items() if v >= min_cooccurrence}
     n_vocabs = len(vocab_to_idx)
-    print('\rword cooccurrence counting from {} sents was done'.format(s+1))
+    if verbose:
+        print('\rword cooccurrence counting from {} sents was done'.format(s+1))
     return dict_to_mat(counter, n_vocabs, n_vocabs)
 
 def dict_to_mat(d, n_rows, n_cols):

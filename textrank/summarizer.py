@@ -32,7 +32,8 @@ class KeywordSummarizer:
     def keywords(self, topk=30):
         if not hasattr(self, 'R'):
             raise RuntimeError('Train textrank first or use summarize function')
-        keywords = [(w, r) for w, r in zip(self.idx_to_vocab, self.R)]
+        idxs = self.R.argsort()[-topk:]
+        keywords = [(self.idx_to_vocab[idx], self.R[idx]) for idx in reversed(idxs)]
         return keywords
 
     def summarize(self, sents, topk=30):
