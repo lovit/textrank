@@ -1,8 +1,44 @@
 from collections import defaultdict
 from scipy.sparse import csr_matrix
 
+from .utils import scan_vocabulary
+from .utils import tokenize_sents
 
-def cooccurrence(tokens, vocab_to_idx, min_cooccurrence=2, window=2):
+
+def word_graph(sents, tokenize=None, min_count=2, window=2, min_cooccurrence=2, vocab_to_idx=None):
+    """
+    Arguments
+    ---------
+    sents : list of str
+        Sentence list
+    tokenize : callable
+        tokenize(str) returns list of str
+    min_count : int
+        Minumum term frequency
+    window : int
+        Co-occurrence window size
+    min_cooccurrence : int
+        Minimum cooccurrence frequency
+    vocab_to_idx : dict
+        Vocabulary to index mapper.
+        If None, this function scan vocabulary first.
+
+    Returns
+    -------
+    co-occurrence word graph : scipy.sparse.csr_matrix
+    idx_to_vocab : list of str
+        Word list corresponding row and column
+    """
+    if vocab_to_idx is None:
+        idx_to_vocab, vocab_to_idx = scan_vocabulary(sents, tokenize, min_count)
+    else:
+        idx_to_vocab = [vocab for vocab, _ in sorted(vocab_to_idx.items(), key=lambda x:x[1])]
+
+    tokens = tokenize_sents(sents, tokenize)
+    g = cooccurrence(tokens, vocab_to_idx, window, min_cooccurrence)
+    return g, idx_to_vocab
+
+def cooccurrence(tokens, vocab_to_idx, window=2, min_cooccurrence=2):
     """
     Arguments
     ---------
@@ -10,10 +46,10 @@ def cooccurrence(tokens, vocab_to_idx, min_cooccurrence=2, window=2):
         Tokenized sentence list
     vocab_to_idx : dict
         Vocabulary to index mapper
-    min_cooccurrence : int
-        Minimum cooccurrence frequency
     window : int
         Co-occurrence window size
+    min_cooccurrence : int
+        Minimum cooccurrence frequency
 
     Returns
     -------
