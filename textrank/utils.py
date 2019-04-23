@@ -3,16 +3,16 @@ from scipy.sparse import csr_matrix
 import numpy as np
 
 
-def scan_vocabulary(sents, min_count=2, tokenize=None):
+def scan_vocabulary(sents, tokenize=None, min_count=2):
     """
     Arguments
     ---------
     sents : list of str
         Sentence list
-    min_count : int
-        Minumum term frequency
     tokenize : callable
         tokenize(str) returns list of str
+    min_count : int
+        Minumum term frequency
 
     Returns
     -------
