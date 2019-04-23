@@ -1,61 +1,83 @@
 ## TextRank implementation
 
-For keyword selections, 
+To summarize La La Land user comments by keyword extraction with part-of-speech tagged documents
 
 ```python
-from pprint import pprint
-from textrank import summarize_as_keywords
+from textrank import KeywordSummarizer
 
-sents = ['sent is list of str', 'this is example']
-keywords = summarize_as_keywords(sents)
-```
+docs = ['list of str form', 'sentence list']
 
-You can specify word graph with arguments of summarize_as_keywords functions. If you use debug mode, it return not only keywords but ranks, vocabulary index, and word graph.
-
-```python
-keywords = summarize_as_keywords(
-    sents,
-    topk=50,
-    tokenizer=lambda s:s.split(),
-    min_count=10,
-    min_cooccurrence=3,
-    verbose=True,
-    debug=True
+keyword_extractor = KeywordSummarizer(
+    tokenize = lambda x:x.split(),      # YOUR TOKENIZER
+    window = -1,
+    verbose = False
 )
+
+keywords = keyword_extractor.summarize(sents, topk=30)
+for word, rank in keywords:
+    # do something
 ```
 
-Keywords, returned variable is list of tuple form. Each tuple contains sentence and its score
 
-    [('재배포', 0.538140850221495),
-     ('무단', 0.46747526750507146),
-     ('금지', 0.3797005381404317),
-     ('뉴시스', 0.1889406802065108),
-     ('공감', 0.10557622894724966),
-     ('저작권자', 0.07848823486967427),
-     ('영상', 0.050533308260353224),
-     ('사진', 0.050099116749948054),
-     ('기자', 0.04488792619512985),
-     ('서울', 0.03798698215834762),
-     ('매일경제', 0.03568735179483187),
-     ('서울경제', 0.035317492192730525),
-     ('머니투데이', 0.0343692938880199),
-     ('독자', 0.0323318142332849),
-     ('헤럴드경제', 0.02936172956817344),
-     ('제보', 0.028581613186882144),
-     ('뉴스', 0.028187297136703055),
-     ('한국경제', 0.024748167201201682),
-     ...
-     ]
-
-For extracting key-sentences, 
+You can specify word cooccurrence graph with arguments.
 
 ```python
-keysentences = summarize_as_keysentences(
-    sents,
-    vocab2idx=vocab2idx,
-    topk=3,
+from textrank import KeywordSummarizer
+
+keyword_extractor = KeywordSummarizer(
+    tokenize = lambda x:x.split()
+    min_count=2,
+    window=-1,                     # cooccurrence within a sentence
+    min_cooccurrence=2,
+    vocab_to_idx=None,             # you can specify vocabulary to build word graph
+    df=0.85,                       # PageRank damping factor
+    max_iter=30,                   # PageRank maximum iteration
+    bias=None,                     # PageRank initial ranking
     verbose=False
 )
 ```
 
-Keysentences, returned variable is also list of tuple form. Each tuple contains sentence and its score
+To summarize La La Land user comments by key-sentence extraction, 
+
+
+```python
+from textrank import KeysentenceSummarizer
+
+summarizer = KeysentenceSummarizer(
+    tokenize = YOUR_TOKENIZER,
+    min_sim = 0.5,
+    verbose = True
+)
+
+keysents = summarizer.summarize(sents, topk=5)
+for sent_idx, rank, sent in keysents:
+    # do something
+```
+
+```
+시사회 보고 왔어요 꿈과 사랑에 관한 이야기인데 뭔가 진한 여운이 남는 영화예요
+시사회 갔다왔어요 제가 라이언고슬링팬이라서 하는말이아니고 너무 재밌어요 꿈과 현실이 잘 보여지는영화 사랑스런 영화 전 개봉하면 또 볼생각입니당
+시사회에서 보고왔는데 여운쩔었다 엠마스톤과 라이언 고슬링의 케미가 도입부의 강렬한음악좋았고 예고편에 나왓던 오디션 노래 감동적이어서 눈물나왔다ㅠ 이영화는 위플래쉬처럼 꼭 영화관에봐야함 색감 노래 배우 환상적인 영화
+방금 시사회로 봤는데 인생영화 하나 또 탄생했네 롱테이크 촬영이 예술 영상이 넘나 아름답고 라이언고슬링의 멋진 피아노 연주 엠마스톤과의 춤과 노래 눈과 귀가 호강한다 재미를 기대하면 약간 실망할수도 있지만 충분히 훌륭한 영화
+황홀하고 따뜻한 꿈이었어요 imax로 또 보려합니다 좋은 영화 시사해주셔서 감사해요
+```
+
+You can also use KoNLPy as your tokenizer
+
+```python
+from konlpy.tag import Komoran
+
+komoran = Komoran()
+def komoran_tokenizer(sent):
+    words = komoran.pos(sent, join=True)
+    words = [w for w in words if ('/NN' in w or '/XR' in w or '/VA' in w or '/VV' in w)]
+    return words
+
+summarizer = KeysentenceSummarizer(
+    tokenize = komoran_tokenizer,
+    min_sim = 0.3,
+    verbose = False
+)
+
+keysents = summarizer.summarize(sents, topk=3)
+```
