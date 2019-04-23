@@ -1,4 +1,5 @@
 from .rank import pagerank
+from .sentence import sent_graph
 from .word import word_graph
 
 
