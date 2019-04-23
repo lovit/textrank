@@ -3,6 +3,23 @@ from scipy.sparse import csr_matrix
 
 
 def cooccurrence(tokens, vocab_to_idx, min_cooccurrence=2, window=2):
+    """
+    Arguments
+    ---------
+    tokens : list of list of str
+        Tokenized sentence list
+    vocab_to_idx : dict
+        Vocabulary to index mapper
+    min_cooccurrence : int
+        Minimum cooccurrence frequency
+    window : int
+        Co-occurrence window size
+
+    Returns
+    -------
+    co-occurrence matrix : scipy.sparse.csr_matrix
+        shape = (n_vocabs, n_vocabs)
+    """
     counter = defaultdict(int)
     for tokens_i in tokens:
         vocabs = [vocab_to_idx[w] for w in tokens_i if w in vocab_to_idx]
@@ -23,6 +40,17 @@ def cooccurrence(tokens, vocab_to_idx, min_cooccurrence=2, window=2):
     return dict_to_mat(counter, n_vocabs, n_vocabs)
 
 def dict_to_mat(d, n_rows, n_cols):
+    """
+    Arguments
+    ---------
+    d : dict
+        key : (i,j) tuple
+        value : float value
+
+    Returns
+    -------
+    scipy.sparse.csr_matrix
+    """
     rows, cols, data = [], [], []
     for (i, j), v in d.items():
         rows.append(i)
