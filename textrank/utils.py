@@ -111,6 +111,21 @@ def scan_vocabulary(sents, min_count=2, tokenize=None):
     vocab_to_idx = {vocab:idx for idx, vocab in enumerate(idx_to_vocab)}
     return idx_to_vocab, vocab_to_idx
 
+def tokenize_sents(sents, tokenize):
+    """
+    Arguments
+    ---------
+    sents : list of str
+        Sentence list
+    tokenize : callable
+        tokenize(sent) returns list of str (word sequence)
+
+    Returns
+    -------
+    tokenized sentence list : list of list of str
+    """
+    return [tokenize(sent) for sent in sents]
+
 def vectorize(tokens, vocab_to_idx):
     """
     Arguments
