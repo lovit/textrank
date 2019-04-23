@@ -1,6 +1,8 @@
 from collections import Counter
 import math
 
+from .utils import scan_vocabulary
+
 
 def textrank_sent_sim(s1, s2):
     """

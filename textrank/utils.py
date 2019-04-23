@@ -111,75 +111,30 @@ def scan_vocabulary(sents, min_count=2, tokenize=None):
     vocab_to_idx = {vocab:idx for idx, vocab in enumerate(idx_to_vocab)}
     return idx_to_vocab, vocab_to_idx
 
-def _encode_cooccurrence(cooccurrence, vocab2idx):
-    rows = []
-    cols = []
-    data = []
-    for vocab1, vocab2s in cooccurrence.items():
-        vocab1 = vocab2idx[vocab1]
-        for vocab2, count in vocab2s.items():
-            vocab2 = vocab2idx[vocab2]
-            rows.append(vocab1)
-            cols.append(vocab2)
-            data.append(count)
-    n_vocabs = max(max(rows), max(cols)) + 1
-    return csr_matrix((data, (rows, cols)), shape=(n_vocabs, n_vocabs))
-
-def bow_to_graph(x):
-    """It transform doc-term sparse matrix to graph.
-    Vertex = [doc_0, doc_1, ..., doc_{n-1}|term_0, term_1, ..., term_{m-1}]
-
+def vectorize(tokens, vocab_to_idx):
+    """
     Arguments
     ---------
-    x: scipy.sparse
+    tokens : list of list of str
+        Tokenzed sentence list
+    vocab_to_idx : dict
+        Vocabulary to index mapper
 
     Returns
     -------
-    g: scipy.sparse.csr_matrix
-        V` = x.shape[0] + x.shape[1]
-        its shape = (V`, V`)
+    sentence bow : scipy.sparse.csr_matrix
+        shape = (n_sents, n_terms)
     """
-    x = x.tocsr()
-    x_ = x.transpose().tocsr()
-    data = np.concatenate((x.data, x_.data))
-    indices = np.concatenate(
-        (x.indices + x.shape[0] , x_.indices))
-    indptr = np.concatenate(
-        (x.indptr, x_.indptr[1:] + len(x.data)))
-    return csr_matrix((data, indices, indptr))
-
-def matrix_to_dict(m):
-    """It transform sparse matrix (scipy.sparse.matrix) to dictdict"""
-    d = defaultdict(lambda: {})
-    for f, (idx_b, idx_e) in enumerate(zip(m.indptr, m.indptr[1:])):
-        for idx in range(idx_b, idx_e):
-            d[f][m.indices[idx]] = m.data[idx]
-    return dict(d)
-
-def dict_to_matrix(dd):
-    rows = []
-    cols = []
-    data = []
-    for d1, d2s in dd.items():
-        for d2, w in d2s.items():
-            rows.append(d1)
-            cols.append(d2)
-            data.append(w)
-    n_nodes = max(max(rows), max(cols)) + 1
-    x = csr_matrix((data, (rows, cols)), shape=(n_nodes, n_nodes))
+    rows, cols, data = [], [], []
+    for i, tokens_i in enumerate(tokens):
+        for t, c in counter(tokens_i).items():
+            j = vocab_to_idx.get(t, -1)
+            if j == -1:
+                continue
+            rows.append(i)
+            cols.append(j)
+            data.append(c)
+    n_sents = len(tokens)
+    n_terms = len(vocab_to_idx)
+    x = csr_matrix((data, (rows, cols)), shape=(n_sents, n_terms))
     return x
-
-def is_dict_dict(dd):
-    if not type(dd) == dict:
-        return False
-    value_item = list(dd.values())[0]
-    return type(value_item) == dict
-
-def is_numeric_dict_dict(dd):
-    if not is_dict_dict(dd):
-        return False
-    key0 = list(dd.keys())[0]
-    key1, value1 = list(list(dd.values())[0].items())[0]
-    if not type(key0) == int or not type(key1) == int:
-        return False
-    return type(value1) == int or type(value1) == float
