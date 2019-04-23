@@ -87,14 +87,29 @@ def sents_to_sentgraph(sents, tokenizer=lambda s:s.split(), vocab2idx=None,
 
     return csr_matrix((data, (rows, cols)), shape=(n_sents, n_sents))
 
-def _scan_vocabulary(sents, tokenizer, min_count):
-    vocab_counter = Counter(vocab for sent in sents for vocab in tokenizer(sent))
-    vocab_counter = {vocab:count for vocab, count in vocab_counter.items()
-                     if count >= min_count}
-    vocab2idx = {vocab:idx for idx, vocab in enumerate(sorted(
-        vocab_counter, key=lambda x:-vocab_counter[x]))}
-    idx2vocab = [vocab for vocab in sorted(vocab2idx, key=lambda x:vocab2idx[x])]
-    return vocab_counter, idx2vocab
+def scan_vocabulary(sents, min_count=2, tokenize=None):
+    """
+    Arguments
+    ---------
+    sents : list of str
+        Sentence list
+    min_count : int
+        Minumum term frequency
+    tokenize : callable
+        tokenize(str) returns list of str
+
+    Returns
+    -------
+    idx_to_vocab : list of str
+        Vocabulary list
+    vocab_to_idx : dict
+        Vocabulary to index mapper.
+    """
+    counter = Counter(w for sent in sents for w in tokenize(sent))
+    counter = {w:c for w,c in counter.items() if c >= min_count}
+    idx_to_vocab = [w for w, _ in sorted(counter.items(), key=lambda x:-x[1])]
+    vocab_to_idx = {vocab:idx for idx, vocab in enumerate(idx_to_vocab)}
+    return idx_to_vocab, vocab_to_idx
 
 def _encode_cooccurrence(cooccurrence, vocab2idx):
     rows = []
