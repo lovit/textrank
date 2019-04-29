@@ -19,9 +19,10 @@ def sent_graph(sents, tokenize=None, min_count=2, min_sim=0.3,
         Minimum term frequency
     min_sim : float
         Minimum similarity between sentences
-    similarity : callable
+    similarity : callable or str
         similarity(s1, s2) returns float
         s1 and s2 are list of str.
+        available similarity = [callable, 'cosine', 'textrank']
     vocab_to_idx : dict
         Vocabulary to index mapper.
         If None, this function scan vocabulary first.
@@ -39,7 +40,11 @@ def sent_graph(sents, tokenize=None, min_count=2, min_sim=0.3,
     else:
         idx_to_vocab = [vocab for vocab, _ in sorted(vocab_to_idx.items(), key=lambda x:x[1])]
 
-    if similarity is None:
+    if similarity == 'cosine':
+        similarity = cosine_sent_sim
+    elif callable(similarity):
+        similarity = similarity
+    else:
         similarity = textrank_sent_sim
 
     tokens = tokenize_sents(sents, tokenize)
