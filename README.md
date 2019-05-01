@@ -1,4 +1,4 @@
-## TextRank implementation
+## Re-iplementation of TextRank ^1
 
 To summarize La La Land user comments by keyword extraction with part-of-speech tagged documents
 
@@ -112,3 +112,6 @@ keysents = summarizer.summarize(sents, topk=3)
 경찰에 따르면 성씨는 19일 오후 강북경찰서 인근 부동산 업소 밖에서 부동산업자 이모 67 씨가 나오기를 기다렸다 이씨와는 평소에도 말다툼을 자주 한 것으로 알려졌다
 서울 연합뉴스 김은경 기자 사제 총기로 경찰을 살해한 범인 성모 46 씨는 주도면밀했다
 ```
+
+## References
+- ^1 : Mihalcea, R., & Tarau, P. (2004). Textrank: Bringing order into text. In Proceedings of the 2004 conference on empirical methods in natural language processing
