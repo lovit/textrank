@@ -1,4 +1,4 @@
-## TextRank implementation
+## Re-iplementation of TextRank [^1]
 
 To summarize La La Land user comments by keyword extraction with part-of-speech tagged documents
 
@@ -62,7 +62,7 @@ for sent_idx, rank, sent in keysents:
 황홀하고 따뜻한 꿈이었어요 imax로 또 보려합니다 좋은 영화 시사해주셔서 감사해요
 ```
 
-You can also use KoNLPy as your tokenizer to summarize 20 sentences news with 3 key-sentences.
+You can also use KoNLPy as your tokenizer to summarize 20 sentences news with key-sentences or keywords.
 
 ```python
 sents = [
@@ -89,6 +89,8 @@ sents = [
 ]
 ```
 
+To summarize texts with key-sentences, 
+
 ```python
 from konlpy.tag import Komoran
 
@@ -112,3 +114,39 @@ keysents = summarizer.summarize(sents, topk=3)
 경찰에 따르면 성씨는 19일 오후 강북경찰서 인근 부동산 업소 밖에서 부동산업자 이모 67 씨가 나오기를 기다렸다 이씨와는 평소에도 말다툼을 자주 한 것으로 알려졌다
 서울 연합뉴스 김은경 기자 사제 총기로 경찰을 살해한 범인 성모 46 씨는 주도면밀했다
 ```
+
+To summarize texts with keywords,
+
+```python
+from textrank import KeywordSummarizer
+
+summarizer = KeywordSummarizer(tokenize=komoran_tokenizer, min_count=2, min_cooccurrence=1)
+summarizer.summarize(sents, topk=20)
+```
+
+```
+[('용의자/NNP', 3.040833543583403),
+ ('사제총/NNP', 2.505798518168069),
+ ('성씨/NNP', 2.4254730689696298),
+ ('서울/NNP', 2.399522533743009),
+ ('경찰/NNG', 2.2541631612221043),
+ ('오후/NNG', 2.154778397410354),
+ ('폭행/NNG', 1.9019818685234693),
+ ('씨/NNB', 1.7517679455874249),
+ ('발사/NNG', 1.658959293729613),
+ ('맞/VV', 1.618499063577056),
+ ('분/NNB', 1.6164369966921637),
+ ('번동/NNP', 1.4681655196749035),
+ ('현장/NNG', 1.4530182347939307),
+ ('시/NNB', 1.408892735491178),
+ ('경찰관/NNP', 1.4012941012332316),
+ ('조사/NNG', 1.4012941012332316),
+ ('일/NNB', 1.3922748983755766),
+ ('강북구/NNP', 1.332317291003927),
+ ('연합뉴스/NNP', 1.3259099432277819),
+ ('이씨/NNP', 1.2869280494707418)]
+```
+
+
+## References
+- ^1 : Mihalcea, R., & Tarau, P. (2004). Textrank: Bringing order into text. In Proceedings of the 2004 conference on empirical methods in natural language processing
