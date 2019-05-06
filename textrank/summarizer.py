@@ -112,10 +112,8 @@ class KeysentenceSummarizer:
         Minumum frequency of words will be used to construct sentence graph
     min_sim : float
         Minimum similarity between sentences in sentence graph
-    similarity : callable or str
-        similarity(s1, s2) returns float
-        s1 and s2 are list of str.
-        available similarity = [callable, 'cosine', 'textrank']
+    similarity : str
+        available similarity = ['cosine', 'textrank']
     vocab_to_idx : dict or None
         Vocabulary to index mapper
     df : float
