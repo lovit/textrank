@@ -91,7 +91,7 @@ def numpy_textrank_similarity_matrix(x, min_sim=0.3, verbose=True, min_length=1,
     z = csr_matrix((data, (rows, cols)), shape=(n_rows, n_cols))
 
     # Inverse sentence length
-    size = np.asarray(z.sum(axis=1)).reshape(-1)
+    size = np.asarray(x.sum(axis=1)).reshape(-1)
     size[np.where(size <= min_length)] = 10000
     size = np.log(size)
 
