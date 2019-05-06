@@ -1,6 +1,9 @@
 from collections import Counter
 import math
+import numpy as np
+import scipy as sp
 from scipy.sparse import csr_matrix
+from sklearn.metrics import pairwise_distances
 
 from .utils import scan_vocabulary
 from .utils import tokenize_sents
@@ -40,9 +43,44 @@ def sent_graph(sents, tokenize=None, min_count=2, min_sim=0.3,
     else:
         idx_to_vocab = [vocab for vocab, _ in sorted(vocab_to_idx.items(), key=lambda x:x[1])]
 
-    tokens = tokenize_sents(sents, tokenize)
-    x = graph_with_python_sim(tokens, verbose, similarity, min_sim)
+    x = vectorize_sents(sents, tokenize, vocab_to_idx)
+    if similarity == 'cosine':
+        x = numpy_cosine_similarity_matrix(x, min_sim, verbose, batch_size=1000)
+    else:
+        raise NotImplemented('Will be implemented TextRank similarity with numpy')
     return x
+
+def vectorize_sents(sents, tokenize, vocab_to_idx):
+    rows, cols, data = [], [], []
+    for i, sent in enumerate(sents):
+        counter = Counter(tokenize(sent))
+        for token, count in counter.items():
+            j = vocab_to_idx.get(token, -1)
+            if j == -1:
+                continue
+            rows.append(i)
+            cols.append(j)
+            data.append(count)
+    n_rows = len(sents)
+    n_cols = len(vocab_to_idx)
+    return csr_matrix((data, (rows, cols)), shape=(n_rows, n_cols))
+
+def numpy_cosine_similarity_matrix(x, min_sim=0.3, verbose=True, batch_size=1000):
+    n_rows = x.shape[0]
+    mat = []
+    for bidx in range(math.ceil(n_rows / batch_size)):
+        b = int(bidx * batch_size)
+        e = min(n_rows, int((bidx+1) * batch_size))
+        psim = 1 - pairwise_distances(x[b:e], x, metric='cosine')
+        rows, cols = np.where(psim >= min_sim)
+        data = psim[rows, cols]
+        mat.append(csr_matrix((data, (rows, cols)), shape=(e-b, n_rows)))
+        if verbose:
+            print('\rcalculating sentence similarity {} / {}'.format(b, n_rows), end='')
+    mat = sp.sparse.vstack(mat)
+    if verbose:
+        print('\rcalculating sentence similarity was done from {} sents'.format(n_rows))
+    return mat
 
 def graph_with_python_sim(tokens, verbose, similarity, min_sim):
     if similarity == 'cosine':
