@@ -119,11 +119,11 @@ def numpy_textrank_similarity_matrix(x, min_sim=0.3, verbose=True, min_length=1,
         mat.append(csr_matrix((data, (rows, cols)), shape=(e-b, n_rows)))
 
         if verbose:
-            print('\rcalculating cosine sentence similarity {} / {}'.format(b, n_rows), end='')
+            print('\rcalculating textrank sentence similarity {} / {}'.format(b, n_rows), end='')
 
     mat = sp.sparse.vstack(mat)
     if verbose:
-        print('\rcalculating cosine sentence similarity was done with {} sents'.format(n_rows))
+        print('\rcalculating textrank sentence similarity was done with {} sents'.format(n_rows))
 
     return mat
 
