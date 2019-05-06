@@ -40,6 +40,11 @@ def sent_graph(sents, tokenize=None, min_count=2, min_sim=0.3,
     else:
         idx_to_vocab = [vocab for vocab, _ in sorted(vocab_to_idx.items(), key=lambda x:x[1])]
 
+    tokens = tokenize_sents(sents, tokenize)
+    x = vectorize_with_python_sim(tokens, verbose, similarity, min_sim)
+    return x
+
+def vectorize_with_python_sim(tokens, verbose, similarity, min_sim):
     if similarity == 'cosine':
         similarity = cosine_sent_sim
     elif callable(similarity):
@@ -47,7 +52,6 @@ def sent_graph(sents, tokenize=None, min_count=2, min_sim=0.3,
     else:
         similarity = textrank_sent_sim
 
-    tokens = tokenize_sents(sents, tokenize)
     rows, cols, data = [], [], []
     n_sents = len(tokens)
     for i, tokens_i in enumerate(tokens):
