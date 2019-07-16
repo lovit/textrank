@@ -156,7 +156,7 @@ class KeysentenceSummarizer:
         """
         g = sent_graph(sents, self.tokenize, self.min_count,
             self.min_sim, self.similarity, self.vocab_to_idx, self.verbose)
-        self.R = pagerank(g, self.df, self.max_iter, self.bias).reshape(-1)
+        self.R = pagerank(g, self.df, self.max_iter, bias).reshape(-1)
         if self.verbose:
             print('trained TextRank. n sentences = {}'.format(self.R.shape[0]))
 
@@ -185,10 +185,11 @@ class KeysentenceSummarizer:
             >>> keysents = summarizer.summarize(texts, topk=30)
         """
         n_sents = len(sents)
-        if isinstance(bias, np.ndarray) and bias.shape != (n_sents,):
-            raise ValueError('The shape of bias must be (n_sents,) but {}'.format(bias.shape))
+        if isinstance(bias, np.ndarray):
+            if bias.shape != (n_sents,):
+                raise ValueError('The shape of bias must be (n_sents,) but {}'.format(bias.shape))
         elif bias is not None:
-            raise ValueError('The type of bias must be None or numpy.ndarray')
+            raise ValueError('The type of bias must be None or numpy.ndarray but the type is {}'.format(type(bias)))
 
         self.train_textrank(sents, bias)
         idxs = self.R.argsort()[-topk:]
