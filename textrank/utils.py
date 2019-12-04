@@ -58,7 +58,7 @@ def vectorize(tokens, vocab_to_idx):
     """
     rows, cols, data = [], [], []
     for i, tokens_i in enumerate(tokens):
-        for t, c in counter(tokens_i).items():
+        for t, c in Counter(tokens_i).items():
             j = vocab_to_idx.get(t, -1)
             if j == -1:
                 continue
