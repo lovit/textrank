@@ -179,10 +179,10 @@ class KeysentenceSummarizer:
 
         Usage
         -----
-            >>> from textrank import KeysentenceSummarizer
+            from textrank import KeysentenceSummarizer
 
-            >>> summarizer = KeysentenceSummarizer(tokenize = tokenizer, min_sim = 0.5)
-            >>> keysents = summarizer.summarize(texts, topk=30)
+            summarizer = KeysentenceSummarizer(tokenize = tokenizer, min_sim = 0.5)
+            keysents = summarizer.summarize(texts, topk=30)
         """
         n_sents = len(sents)
         if isinstance(bias, np.ndarray):
