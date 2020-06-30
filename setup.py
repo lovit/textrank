@@ -9,7 +9,7 @@ setup(
     author_email='soy.lovit@gmail.com',
     description='TextRank based Summarizer (Keyword and key-sentence extractor)',
     packages=find_packages(),
-    long_description=open('README.md').read(),
+    long_description=open('README.md', encoding="utf-8").read(),
     zip_safe=False,
     setup_requires=[]
 )
